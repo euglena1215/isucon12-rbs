@@ -1,0 +1,50 @@
+class Isuports::App::Viewer
+  extend Data::_DataClass
+  attr_reader role: String
+  attr_reader player_id: String
+  attr_reader tenant_name: String
+  attr_reader tenant_id: String
+  def self.new: (*untyped) -> Isuports::App::Viewer
+              | (**untyped) -> Isuports::App::Viewer
+              | ...
+end
+
+class Isuports::App::TenantRow
+  extend Data::_DataClass
+  attr_reader id: Integer
+  attr_reader name: String
+  attr_reader display_name: String
+  attr_reader created_at: Integer
+  attr_reader updated_at: Integer
+  def self.new: (*untyped) -> Isuports::App::TenantRow
+              | (**untyped) -> Isuports::App::TenantRow
+              | ...
+end
+
+class Isuports::App::CompetitionRow
+  extend Data::_DataClass
+  attr_reader tenant_id: String
+  attr_reader id: String
+  attr_reader title: String
+  attr_reader finished_at: Integer
+  attr_reader created_at: Integer
+  attr_reader updated_at: Integer
+  def self.new: (*untyped) -> Isuports::App::CompetitionRow
+              | (**untyped) -> Isuports::App::CompetitionRow
+              | ...
+end
+
+class Isuports::App::PlayerScoreRow
+  extend Data::_DataClass
+  attr_reader tenant_id: String
+  attr_reader id: String
+  attr_reader player_id: String
+  attr_reader competition_id: String
+  attr_reader score: Integer
+  attr_reader row_num: Integer
+  attr_reader created_at: Integer
+  attr_reader updated_at: Integer
+  def self.new: (*untyped) -> Isuports::App::PlayerScoreRow
+              | (**untyped) -> Isuports::App::PlayerScoreRow
+              | ...
+end

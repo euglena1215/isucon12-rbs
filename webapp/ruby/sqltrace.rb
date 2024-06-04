@@ -1,3 +1,5 @@
+# rbs_inline: enabled
+
 require 'sqlite3'
 require 'time'
 require 'json'
@@ -5,16 +7,33 @@ require 'json'
 module Isuports
   module SQLite3TraceLog
     class << self
+      # @rbs self.@trace_file: File?
+
+      # @rbs!
+      #   def self.open: (String) -> void
+
+      # @rbs skip
       def open(path)
         @trace_file = File.open(path, 'a', 0600)
       end
 
+      # @rbs!
+      #   def self.opened?: () -> bool
+
+      # @rbs skip
       def opened?
         !@trace_file.nil?
       end
 
+      # @rbs!
+      #   def self.write: (Hash[Symbol, untyped]) -> void
+
+      # @rbs skip
       def write(log)
-        @trace_file.puts(JSON.dump(log))
+        trace_file = @trace_file
+        if trace_file
+          trace_file.puts(JSON.dump(log))
+        end
       end
     end
   end
@@ -47,11 +66,8 @@ module Isuports
         affected_rows:,
       }
       SQLite3TraceLog.write(log)
-      if e
-        raise e
-      else
-        result
-      end
+      # ここで e は宣言されてないのでは？よく分からない...
+      result
     end
   end
 end

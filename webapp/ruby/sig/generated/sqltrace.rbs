@@ -1,0 +1,17 @@
+# Generated from sqltrace.rb with RBS::Inline
+
+module Isuports
+  module SQLite3TraceLog
+    self.@trace_file: File?
+
+    def self.open: (String) -> void
+
+    def self.opened?: () -> bool
+
+    def self.write: (Hash[Symbol, untyped]) -> void
+  end
+
+  class SQLite3DatabaseWithTrace < SQLite3::Database
+    def execute: (untyped sql, ?untyped bind_vars, *untyped args) ?{ (?) -> untyped } -> untyped
+  end
+end

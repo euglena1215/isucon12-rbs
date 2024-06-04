@@ -1,0 +1,12 @@
+D = Steep::Diagnostic
+
+target :app do
+  signature "sig"
+
+  check "app.rb"
+  check "sqltrace.rb"
+
+  library "json", "csv"
+
+  configure_code_diagnostics(D::Ruby.all_error)
+end

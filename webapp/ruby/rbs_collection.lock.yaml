@@ -1,0 +1,88 @@
+---
+path: ".gem_rbs_collection"
+gems:
+- name: base64
+  version: '0'
+  source:
+    type: stdlib
+- name: cgi
+  version: '0'
+  source:
+    type: stdlib
+- name: dbm
+  version: '0'
+  source:
+    type: stdlib
+- name: io-console
+  version: '0'
+  source:
+    type: stdlib
+- name: jwt
+  version: '2.5'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 40bc6f347bd515583de8d04422ffdffd3e7766f0
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: mysql2
+  version: '0.5'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 40bc6f347bd515583de8d04422ffdffd3e7766f0
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: mysql2-cs-bind
+  version: '0.1'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 40bc6f347bd515583de8d04422ffdffd3e7766f0
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: pstore
+  version: '0'
+  source:
+    type: stdlib
+- name: psych
+  version: '0'
+  source:
+    type: stdlib
+- name: rack
+  version: '2.2'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 40bc6f347bd515583de8d04422ffdffd3e7766f0
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: rdoc
+  version: '0'
+  source:
+    type: stdlib
+- name: sinatra
+  version: '4.0'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 40bc6f347bd515583de8d04422ffdffd3e7766f0
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: sinatra-contrib
+  version: '4.0'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 40bc6f347bd515583de8d04422ffdffd3e7766f0
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: tempfile
+  version: '0'
+  source:
+    type: stdlib
+- name: uri
+  version: '0'
+  source:
+    type: stdlib
+gemfile_lock_path: Gemfile.lock

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# rbs_inline: enabled
 
 require 'csv'
 require 'jwt'
@@ -13,6 +14,37 @@ require 'sinatra/json'
 require 'sqlite3'
 
 require_relative 'sqltrace'
+
+class Data
+  # @rbs self.@classes: Hash[untyped, Hash[Symbol, String]]
+  @classes = {}
+
+  #:: [KLASS < ::Data::_DataClass] (**untyped) ?{ (KLASS) [self: KLASS] -> void } -> KLASS
+  def self.typed_define(**attrs, &block)
+    k = define(*attrs.keys, &block)
+    @classes[k] = attrs
+    k
+  end
+
+  def self.generate_rbs(class_name, attrs)
+    <<~RBS
+      class #{class_name}
+        extend Data::_DataClass
+        #{attrs.map { |k,v| "attr_reader #{k}: #{v}" }.join("\n  ")}
+        def self.new: (*untyped) -> #{class_name}
+                    | (**untyped) -> #{class_name} | ...
+      end
+    RBS
+  end
+  
+  at_exit do
+    body = ''
+    @classes.each do |klass, attrs|
+      body += generate_rbs(klass.name, attrs) + "\n"
+    end
+    File.write('sig/generated/typed_data.rbs', body)
+  end
+end
 
 module Isuports
   class App < Sinatra::Base
@@ -41,14 +73,69 @@ module Isuports
     TENANT_NAME_REGEXP = /^[a-z][a-z0-9-]{0,61}[a-z0-9]$/
 
     # アクセスしてきた人の情報
-    Viewer = Struct.new(:role, :player_id, :tenant_name, :tenant_id, keyword_init: true)
+    # @rbs skip
+    Viewer = Data.typed_define(
+      role: 'String',
+      player_id: 'String',
+      tenant_name: 'String',
+      tenant_id: 'String',
+    )
 
-    TenantRow = Struct.new(:id, :name, :display_name, :created_at, :updated_at, keyword_init: true)
-    PlayerRow = Struct.new(:tenant_id, :id, :display_name, :is_disqualified, :created_at, :updated_at, keyword_init: true)
-    CompetitionRow = Struct.new(:tenant_id, :id, :title, :finished_at, :created_at, :updated_at, keyword_init: true)
-    PlayerScoreRow = Struct.new(:tenant_id, :id, :player_id, :competition_id, :score, :row_num, :created_at, :updated_at, keyword_init: true)
+    # @rbs skip
+    TenantRow = Data.typed_define(
+      id: 'Integer',
+      name: 'String',
+      display_name: 'String',
+      created_at: 'Integer', 
+      updated_at: 'Integer',
+    )
+
+    # @rbs!
+    #   class PlayerRow
+    #     attr_accessor tenant_id: Integer
+    #     attr_accessor id: String
+    #     attr_accessor display_name: String
+    #     attr_accessor is_disqualified: bool
+    #     attr_accessor created_at: Integer
+    #     attr_accessor updated_at: Integer
+    #     def to_h: () -> Hash[Symbol, untyped]
+    #   end
+
+    # @rbs skip
+    PlayerRow = Struct.new(
+      :tenant_id,
+      :id,
+      :display_name,
+      :is_disqualified,
+      :created_at,
+      :updated_at,
+      keyword_init: true,
+    )
+
+    # @rbs skip
+    CompetitionRow = Data.typed_define(
+      tenant_id: 'String',
+      id: 'String',
+      title: 'String',
+      finished_at: 'Integer',
+      created_at: 'Integer',
+      updated_at: 'Integer',
+    )
+
+    # @rbs skip
+    PlayerScoreRow = Data.typed_define(
+      tenant_id: 'String', 
+      id: 'String', 
+      player_id: 'String', 
+      competition_id: 'String', 
+      score: 'Integer', 
+      row_num: 'Integer', 
+      created_at: 'Integer', 
+      updated_at: 'Integer',
+    )
 
     class HttpError < StandardError
+      # @dynamic code
       attr_reader :code
 
       def initialize(code, message)
@@ -57,7 +144,9 @@ module Isuports
       end
     end
 
-    def initialize(*, **)
+    # @rbs @trace_file_path: String
+    
+    def initialize(app = nil, **_kwargs)
       super
       @trace_file_path = ENV.fetch('ISUCON_SQLITE_TRACE_FILE', '')
       unless @trace_file_path.empty?
@@ -76,7 +165,7 @@ module Isuports
 
     helpers do
       # 管理用DBに接続する
-      def connect_admin_db
+      def connect_admin_db #:: Mysql2::Client[Mysql2::ResultAsHash]
         host = ENV.fetch('ISUCON_DB_HOST', '127.0.0.1')
         port = ENV.fetch('ISUCON_DB_PORT', '3306')
         username = ENV.fetch('ISUCON_DB_USER', 'isucon')
@@ -96,19 +185,22 @@ module Isuports
         )
       end
 
-      def admin_db
+      def admin_db #:: Mysql2::Client[Mysql2::ResultAsHash]
         Thread.current[:admin_db] ||= connect_admin_db
       end
 
       # テナントDBのパスを返す
+      #:: (Integer) -> String
       def tenant_db_path(id)
         tenant_db_dir = ENV.fetch('ISUCON_TENANT_DB_DIR', '../tenant_db')
         File.join(tenant_db_dir, "#{id}.db")
       end
 
       # テナントDBに接続する
+      #:: (Integer) { (SQLite3::Database) -> untyped } -> void
       def connect_to_tenant_db(id, &block)
         path = tenant_db_path(id)
+        # @type var ret: untyped
         ret = nil
         database_klass =
           if @trace_file_path.empty?
@@ -124,6 +216,7 @@ module Isuports
       end
 
       # テナントDBを新規に作成する
+      #:: (Integer) -> nil
       def create_tenant_db(id)
         path = tenant_db_path(id)
         out, status = Open3.capture2e('sh', '-c', "sqlite3 #{path} < #{TENANT_DB_SCHEMA_FILE_PATH}")
@@ -134,7 +227,8 @@ module Isuports
       end
 
       # システム全体で一意なIDを生成する
-      def dispense_id
+      def dispense_id #:: String
+        # @type var last_exception: Mysql2::Error?
         last_exception = nil
         100.times do |i|
           begin
@@ -149,7 +243,7 @@ module Isuports
           end
           return admin_db.last_id.to_s(16)
         end
-        raise last_exception
+        raise (last_exception || RuntimeError.new)
       end
 
       # リクエストヘッダをパースしてViewerを返す
@@ -258,6 +352,7 @@ module Isuports
       end
 
       # 排他ロックする
+      #:: (Integer tenant_id) { () -> untyped } -> void
       def flock_by_tenant_id(tenant_id, &block)
         path = lock_file_path(tenant_id)
 
@@ -290,13 +385,16 @@ module Isuports
         comp = retrieve_competition(tenant_db, competition_id)
 
         # ランキングにアクセスした参加者のIDを取得する
+        # @type var billing_map: Hash[String, String]
         billing_map = {}
         admin_db.xquery('SELECT player_id, MIN(created_at) AS min_created_at FROM visit_history WHERE tenant_id = ? AND competition_id = ? GROUP BY player_id', tenant_id, comp.id).each do |vh|
           # competition.finished_atよりもあとの場合は、終了後に訪問したとみなして大会開催内アクセス済みとみなさない
           if comp.finished_at && comp.finished_at < vh.fetch(:min_created_at)
             next
           end
-          billing_map[vh.fetch(:player_id)] = 'visitor'
+          player_id = vh.fetch(:player_id)
+          raise unless player_id.is_a?(String)
+          billing_map[player_id] = 'visitor'
         end
 
         # player_scoreを読んでいるときに更新が走ると不整合が起こるのでロックを取得する
@@ -335,6 +433,7 @@ module Isuports
       end
 
       def competitions_handler(v, tenant_db)
+        # @type var competitions: Array[Hash[Symbol, untyped]]
         competitions = []
         tenant_db.execute('SELECT * FROM competition WHERE tenant_id=? ORDER BY created_at DESC', [v.tenant_id]) do |row|
           comp = CompetitionRow.new(row)
@@ -423,6 +522,7 @@ module Isuports
       #     scoreが登録されていないplayerでアクセスした人 * 10
       #   を合計したものを
       # テナントの課金とする
+      # @type var tenant_billings: Array[Hash[Symbol, untyped]]
       tenant_billings = []
       admin_db.xquery('SELECT * FROM tenant ORDER BY id DESC').each do |row|
         t = TenantRow.new(row)
@@ -465,6 +565,7 @@ module Isuports
       end
 
       connect_to_tenant_db(v.tenant_id) do |tenant_db|
+        # @type var players: Array[Hash[Symbol, untyped]]
         players = []
         tenant_db.execute('SELECT * FROM player WHERE tenant_id=? ORDER BY created_at DESC', [v.tenant_id]) do |row|
           player = PlayerRow.new(row)
@@ -666,6 +767,7 @@ module Isuports
       end
 
       connect_to_tenant_db(v.tenant_id) do |tenant_db|
+        # @type var reports: Array[Hash]
         reports = []
         tenant_db.execute('SELECT * FROM competition WHERE tenant_id=? ORDER BY created_at DESC', [v.tenant_id]) do |row|
           comp = CompetitionRow.new(row)
@@ -742,6 +844,17 @@ module Isuports
       end
     end
 
+    # @rbs!
+    #   class CompetitionRank
+    #     attr_accessor rank: Integer
+    #     attr_accessor score: Integer
+    #     attr_accessor player_id: String
+    #     attr_accessor player_display_name: String
+    #     attr_accessor row_num: Integer
+    #     def initialize: (?rank: Integer, ?score: Integer, ?player_id: String, ?player_display_name: String, ?row_num: Integer) -> void
+    #   end
+
+    # @rbs skip
     CompetitionRank = Struct.new(:rank, :score, :player_id, :player_display_name, :row_num, keyword_init: true)
 
     # 大会ごとのランキングを取得する
@@ -776,6 +889,7 @@ module Isuports
 
         # player_scoreを読んでいるときに更新が走ると不整合が起こるのでロックを取得する
         flock_by_tenant_id(v.tenant_id) do
+          # @type var ranks: Array[CompetitionRank]
           ranks = []
           scored_player_set = Set.new
           tenant_db.execute('SELECT * FROM player_score WHERE tenant_id = ? AND competition_id = ? ORDER BY row_num DESC', [tenant.id, competition_id]) do |row|
@@ -846,7 +960,7 @@ module Isuports
       v =
         begin
           parse_viewer
-        rescue HttpError => e
+        rescue HttpError
           return json(
             status: true,
             data: {
