@@ -3,7 +3,7 @@ class Isuports::App::Viewer
   attr_reader role: String
   attr_reader player_id: String
   attr_reader tenant_name: String
-  attr_reader tenant_id: String
+  attr_reader tenant_id: Integer
   def self.new: (*untyped) -> Isuports::App::Viewer
               | (**untyped) -> Isuports::App::Viewer
               | ...

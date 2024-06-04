@@ -78,7 +78,7 @@ module Isuports
       role: 'String',
       player_id: 'String',
       tenant_name: 'String',
-      tenant_id: 'String',
+      tenant_id: 'Integer',
     )
 
     # @rbs skip
@@ -98,6 +98,7 @@ module Isuports
     #     attr_accessor is_disqualified: bool
     #     attr_accessor created_at: Integer
     #     attr_accessor updated_at: Integer
+    #     def initialize: (?tenant_id: Integer, ?id: String, ?display_name: String, ?is_disqualified: bool, ?created_at: Integer, ?updated_at: Integer) -> void
     #     def to_h: () -> Hash[Symbol, untyped]
     #   end
 
@@ -247,7 +248,7 @@ module Isuports
       end
 
       # リクエストヘッダをパースしてViewerを返す
-      def parse_viewer
+      def parse_viewer #:: Viewer
         token_str = cookies[COOKIE_NAME]
         unless token_str
           raise HttpError.new(401, "cookie #{COOKIE_NAME} is not found")
@@ -292,7 +293,7 @@ module Isuports
         raise HttpError.new(401, "#{e.class}: #{e.message}")
       end
 
-      def retrieve_tenant_row_from_header
+      def retrieve_tenant_row_from_header #:: TenantRow
         # JWTに入っているテナント名とHostヘッダのテナント名が一致しているか確認
         base_host = ENV.fetch('ISUCON_BASE_HOSTNAME', '.t.isucon.dev')
         tenant_name = request.host_with_port.delete_suffix(base_host)
@@ -311,6 +312,7 @@ module Isuports
       end
 
       # 参加者を取得する
+      #:: (SQLite3::Database, Integer) -> PlayerRow?
       def retrieve_player(tenant_db, id)
         row = tenant_db.get_first_row('SELECT * FROM player WHERE id = ?', [id])
         if row
@@ -324,6 +326,7 @@ module Isuports
 
       # 参加者を認可する
       # 参加者向けAPIで呼ばれる
+      #:: (SQLite3::Database, Integer) -> void
       def authorize_player!(tenant_db, id)
         player = retrieve_player(tenant_db, id)
         unless player
@@ -336,6 +339,7 @@ module Isuports
       end
 
       # 大会を取得する
+      #:: (SQLite3::Database, Integer) -> CompetitionRow?
       def retrieve_competition(tenant_db, id)
         row = tenant_db.get_first_row('SELECT * FROM competition WHERE id = ?', [id])
         if row
@@ -346,6 +350,7 @@ module Isuports
       end
 
       # 排他ロックのためのファイル名を生成する
+      #:: (Integer) -> String
       def lock_file_path(id)
         tenant_db_dir = ENV.fetch('ISUCON_TENANT_DB_DIR', '../tenant_db')
         File.join(tenant_db_dir, "#{id}.lock")
@@ -363,12 +368,25 @@ module Isuports
       end
 
       # テナント名が規則に沿っているかチェックする
+      #:: (String) -> void
       def validate_tenant_name!(name)
         unless TENANT_NAME_REGEXP.match?(name)
           raise HttpError.new(400, "invalid tenant name: #{name}")
         end
       end
 
+      # @rbs!
+      #   class BillingReport
+      #     attr_accessor competition_id: Integer
+      #     attr_accessor competition_title: String
+      #     attr_accessor player_count: Integer
+      #     attr_accessor visitor_count: Integer
+      #     attr_accessor billing_player_yen: Integer
+      #     attr_accessor billing_visitor_yen: Integer
+      #     attr_accessor billing_yen: Integer
+      #   end
+
+      # @rbs skip
       BillingReport = Struct.new(
         :competition_id,
         :competition_title,
@@ -381,6 +399,7 @@ module Isuports
       )
 
       # 大会ごとの課金レポートを計算する
+      #:: (SQLite3::Database, Integer, Integer) -> BillingReport
       def billing_report_by_competition(tenant_db, tenant_id, competition_id)
         comp = retrieve_competition(tenant_db, competition_id)
 

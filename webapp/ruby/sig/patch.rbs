@@ -1,8 +1,9 @@
 module SQLite3
   class Database
-    def execute: (String, Array[untyped]) ?{ (?) -> untyped } -> untyped
+    type row_value_type = String | Integer | Float | nil
+    def execute: (String, Array[untyped]) ?{ (?) -> untyped } -> Array[Array[row_value_type]]
     def changes: () -> untyped
-    def get_first_row: (String, Array[untyped]) -> untyped
+    def get_first_row: (String, Array[untyped]) -> Array[row_value_type]?
                
     def initialize: (String, results_as_hash: bool) { (?) -> untyped } -> untyped
   end
