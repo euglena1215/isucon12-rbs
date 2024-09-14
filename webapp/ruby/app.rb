@@ -42,19 +42,21 @@ module Isuports
     TENANT_NAME_REGEXP = /^[a-z][a-z0-9-]{0,61}[a-z0-9]$/
 
     # アクセスしてきた人の情報
-    Viewer = Data.define(
+    Viewer = Struct.new(
       :role, #: String
       :player_id, #: String
       :tenant_name, #: String
       :tenant_id, #: Integer
+      keyword_init: true,
     )
 
-    TenantRow = Data.define(
+    TenantRow = Struct.new(
       :id, #: Integer
       :name, #: String
       :display_name, #: String
       :created_at, #: Integer
       :updated_at, #: Integer
+      keyword_init: true,
     )
 
     PlayerRow = Struct.new(
@@ -67,16 +69,17 @@ module Isuports
       keyword_init: true,
     )
 
-    CompetitionRow = Data.define(
+    CompetitionRow = Struct.new(
       :tenant_id, #: String
       :id, #: String
       :title, #: String
       :finished_at, #: Integer
       :created_at, #: Integer
       :updated_at, #: Integer
+      keyword_init: true,
     )
 
-    PlayerScoreRow = Data.define(
+    PlayerScoreRow = Struct.new(
       :tenant_id, #: String
       :id, #: String
       :player_id, #: String
@@ -85,6 +88,7 @@ module Isuports
       :row_num, #: Integer
       :created_at, #: Integer
       :updated_at, #: Integer
+      keyword_init: true,
     )
 
     class HttpError < StandardError

@@ -20,32 +20,30 @@ module Isuports
     TENANT_NAME_REGEXP: ::Regexp
 
     # アクセスしてきた人の情報
-    class Viewer < Data
-      attr_reader role(): String
+    class Viewer < Struct[untyped]
+      attr_accessor role(): String
 
-      attr_reader player_id(): String
+      attr_accessor player_id(): String
 
-      attr_reader tenant_name(): String
+      attr_accessor tenant_name(): String
 
-      attr_reader tenant_id(): Integer
+      attr_accessor tenant_id(): Integer
 
-      def self.new: (String role, String player_id, String tenant_name, Integer tenant_id) -> instance
-                  | (role: String, player_id: String, tenant_name: String, tenant_id: Integer) -> instance
+      def self.new: (?role: String, ?player_id: String, ?tenant_name: String, ?tenant_id: Integer) -> instance
     end
 
-    class TenantRow < Data
-      attr_reader id(): Integer
+    class TenantRow < Struct[untyped]
+      attr_accessor id(): Integer
 
-      attr_reader name(): String
+      attr_accessor name(): String
 
-      attr_reader display_name(): String
+      attr_accessor display_name(): String
 
-      attr_reader created_at(): Integer
+      attr_accessor created_at(): Integer
 
-      attr_reader updated_at(): Integer
+      attr_accessor updated_at(): Integer
 
-      def self.new: (Integer id, String name, String display_name, Integer created_at, Integer updated_at) -> instance
-                  | (id: Integer, name: String, display_name: String, created_at: Integer, updated_at: Integer) -> instance
+      def self.new: (?id: Integer, ?name: String, ?display_name: String, ?created_at: Integer, ?updated_at: Integer) -> instance
     end
 
     class PlayerRow < Struct[untyped]
@@ -64,42 +62,40 @@ module Isuports
       def self.new: (?tenant_id: Integer, ?id: String, ?display_name: String, ?is_disqualified: bool, ?created_at: Integer, ?updated_at: Integer) -> instance
     end
 
-    class CompetitionRow < Data
-      attr_reader tenant_id(): String
+    class CompetitionRow < Struct[untyped]
+      attr_accessor tenant_id(): String
 
-      attr_reader id(): String
+      attr_accessor id(): String
 
-      attr_reader title(): String
+      attr_accessor title(): String
 
-      attr_reader finished_at(): Integer
+      attr_accessor finished_at(): Integer
 
-      attr_reader created_at(): Integer
+      attr_accessor created_at(): Integer
 
-      attr_reader updated_at(): Integer
+      attr_accessor updated_at(): Integer
 
-      def self.new: (String tenant_id, String id, String title, Integer finished_at, Integer created_at, Integer updated_at) -> instance
-                  | (tenant_id: String, id: String, title: String, finished_at: Integer, created_at: Integer, updated_at: Integer) -> instance
+      def self.new: (?tenant_id: String, ?id: String, ?title: String, ?finished_at: Integer, ?created_at: Integer, ?updated_at: Integer) -> instance
     end
 
-    class PlayerScoreRow < Data
-      attr_reader tenant_id(): String
+    class PlayerScoreRow < Struct[untyped]
+      attr_accessor tenant_id(): String
 
-      attr_reader id(): String
+      attr_accessor id(): String
 
-      attr_reader player_id(): String
+      attr_accessor player_id(): String
 
-      attr_reader competition_id(): String
+      attr_accessor competition_id(): String
 
-      attr_reader score(): Integer
+      attr_accessor score(): Integer
 
-      attr_reader row_num(): Integer
+      attr_accessor row_num(): Integer
 
-      attr_reader created_at(): Integer
+      attr_accessor created_at(): Integer
 
-      attr_reader updated_at(): Integer
+      attr_accessor updated_at(): Integer
 
-      def self.new: (String tenant_id, String id, String player_id, String competition_id, Integer score, Integer row_num, Integer created_at, Integer updated_at) -> instance
-                  | (tenant_id: String, id: String, player_id: String, competition_id: String, score: Integer, row_num: Integer, created_at: Integer, updated_at: Integer) -> instance
+      def self.new: (?tenant_id: String, ?id: String, ?player_id: String, ?competition_id: String, ?score: Integer, ?row_num: Integer, ?created_at: Integer, ?updated_at: Integer) -> instance
     end
 
     class HttpError < StandardError
