@@ -15,37 +15,6 @@ require 'sqlite3'
 
 require_relative 'sqltrace'
 
-class Data
-  # @rbs self.@classes: Hash[untyped, Hash[Symbol, String]]
-  @classes = {}
-
-  #:: [KLASS < ::Data::_DataClass] (**untyped) ?{ (KLASS) [self: KLASS] -> void } -> KLASS
-  def self.typed_define(**attrs, &block)
-    k = define(*attrs.keys, &block)
-    @classes[k] = attrs
-    k
-  end
-
-  def self.generate_rbs(class_name, attrs)
-    <<~RBS
-      class #{class_name}
-        extend Data::_DataClass
-        #{attrs.map { |k,v| "attr_reader #{k}: #{v}" }.join("\n  ")}
-        def self.new: (*untyped) -> #{class_name}
-                    | (**untyped) -> #{class_name} | ...
-      end
-    RBS
-  end
-  
-  at_exit do
-    body = ''
-    @classes.each do |klass, attrs|
-      body += generate_rbs(klass.name, attrs) + "\n"
-    end
-    File.write('sig/generated/typed_data.rbs', body)
-  end
-end
-
 module Isuports
   class App < Sinatra::Base
     enable :logging
@@ -73,66 +42,49 @@ module Isuports
     TENANT_NAME_REGEXP = /^[a-z][a-z0-9-]{0,61}[a-z0-9]$/
 
     # アクセスしてきた人の情報
-    # @rbs skip
-    Viewer = Data.typed_define(
-      role: 'String',
-      player_id: 'String',
-      tenant_name: 'String',
-      tenant_id: 'Integer',
+    Viewer = Data.define(
+      :role, #: String
+      :player_id, #: String
+      :tenant_name, #: String
+      :tenant_id, #: Integer
     )
 
-    # @rbs skip
-    TenantRow = Data.typed_define(
-      id: 'Integer',
-      name: 'String',
-      display_name: 'String',
-      created_at: 'Integer', 
-      updated_at: 'Integer',
+    TenantRow = Data.define(
+      :id, #: Integer
+      :name, #: String
+      :display_name, #: String
+      :created_at, #: Integer
+      :updated_at, #: Integer
     )
 
-    # @rbs!
-    #   class PlayerRow
-    #     attr_accessor tenant_id: Integer
-    #     attr_accessor id: String
-    #     attr_accessor display_name: String
-    #     attr_accessor is_disqualified: bool
-    #     attr_accessor created_at: Integer
-    #     attr_accessor updated_at: Integer
-    #     def initialize: (?tenant_id: Integer, ?id: String, ?display_name: String, ?is_disqualified: bool, ?created_at: Integer, ?updated_at: Integer) -> void
-    #     def to_h: () -> Hash[Symbol, untyped]
-    #   end
-
-    # @rbs skip
     PlayerRow = Struct.new(
-      :tenant_id,
-      :id,
-      :display_name,
-      :is_disqualified,
-      :created_at,
-      :updated_at,
+      :tenant_id, #: Integer
+      :id, #: String
+      :display_name, #: String
+      :is_disqualified, #: bool
+      :created_at, #: Integer
+      :updated_at, #: Integer,
       keyword_init: true,
     )
 
-    # @rbs skip
-    CompetitionRow = Data.typed_define(
-      tenant_id: 'String',
-      id: 'String',
-      title: 'String',
-      finished_at: 'Integer',
-      created_at: 'Integer',
-      updated_at: 'Integer',
+    CompetitionRow = Data.define(
+      :tenant_id, #: String
+      :id, #: String
+      :title, #: String
+      :finished_at, #: Integer
+      :created_at, #: Integer
+      :updated_at, #: Integer
     )
 
-    # @rbs skip
-    PlayerScoreRow = Data.typed_define(
-      tenant_id: 'String', 
-      id: 'String', 
-      player_id: 'String', 
-      competition_id: 'String', 
-      score: 'Integer', 
-      row_num: 'Integer', 
-      created_at: 'Integer', 
-      updated_at: 'Integer',
+    PlayerScoreRow = Data.define(
+      :tenant_id, #: String
+      :id, #: String
+      :player_id, #: String
+      :competition_id, #: String
+      :score, #: Integer
+      :row_num, #: Integer
+      :created_at, #: Integer
+      :updated_at, #: Integer
     )
 
     class HttpError < StandardError
@@ -146,7 +98,7 @@ module Isuports
     end
 
     # @rbs @trace_file_path: String
-    
+
     def initialize(app = nil, **_kwargs)
       super
       @trace_file_path = ENV.fetch('ISUCON_SQLITE_TRACE_FILE', '')
@@ -375,26 +327,19 @@ module Isuports
         end
       end
 
-      # @rbs!
-      #   class BillingReport
-      #     attr_accessor competition_id: Integer
-      #     attr_accessor competition_title: String
-      #     attr_accessor player_count: Integer
-      #     attr_accessor visitor_count: Integer
-      #     attr_accessor billing_player_yen: Integer
-      #     attr_accessor billing_visitor_yen: Integer
-      #     attr_accessor billing_yen: Integer
-      #   end
-
-      # @rbs skip
       BillingReport = Struct.new(
-        :competition_id,
-        :competition_title,
-        :player_count,  # スコアを登録した参加者数
-        :visitor_count, # ランキングを閲覧だけした(スコアを登録していない)参加者数
-        :billing_player_yen,  # 請求金額 スコアを登録した参加者分
-        :billing_visitor_yen, # 請求金額 ランキングを閲覧だけした(スコアを登録していない)参加者分
-        :billing_yen, # 合計請求金額
+        :competition_id, #: Integer
+        :competition_title, #: String
+        # スコアを登録した参加者数
+        :player_count, #: Integer
+        # ランキングを閲覧だけした(スコアを登録していない)参加者数
+        :visitor_count, #: Integer
+        # 請求金額 スコアを登録した参加者分
+        :billing_player_yen, #: Integer
+        # 請求金額 ランキングを閲覧だけした(スコアを登録していない)参加者分
+        :billing_visitor_yen, #: Integer
+        # 合計請求金額
+        :billing_yen, #: Integer
         keyword_init: true,
       )
 
