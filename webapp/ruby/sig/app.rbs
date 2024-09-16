@@ -1,0 +1,24 @@
+# https://github.com/soutaro/rbs-inline/pull/99
+module Isuports
+  class App < Sinatra::Base
+    class PlayerScoreRow < Struct[untyped]
+      def self.new: ({ ?tenant_id: String, ?id: String, ?player_id: String, ?competition_id: String, ?score: Integer, ?row_num: Integer, ?created_at: Integer, ?updated_at: Integer }) -> instance
+                  | ...
+    end
+
+    class TenantRow < Struct[untyped]
+      def self.new: ({ ?id: Integer, ?name: String, ?display_name: String, ?created_at: Integer, ?updated_at: Integer}) -> instance
+                  | ...
+    end
+
+    class CompetitionRow < Struct[untyped]
+      def self.new: ({ ?tenant_id: String, ?id: String, ?title: String, ?finished_at: Integer, ?created_at: Integer, ?updated_at: Integer }) -> instance
+                  | ...
+    end
+
+    class PlayerRow < Struct[untyped]
+      def self.new: ({ ?tenant_id: Integer, ?id: String, ?display_name: String, ?is_disqualified: bool, ?created_at: Integer, ?updated_at: Integer }) -> instance
+                  | ...
+    end
+  end
+end

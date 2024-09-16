@@ -38,7 +38,7 @@ module Isuports
     end
   end
 
-  class SQLite3DatabaseWithTrace < SQLite3::Database
+  class SQLite3DatabaseWithTrace < SQLite3::Database #[SQLite3::result_as_hash]
     def execute(sql, bind_vars = [], *args, &block)
       unless SQLite3TraceLog.opened?
         return super

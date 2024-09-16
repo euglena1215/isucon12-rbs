@@ -1,5 +1,10 @@
 # Generated from app.rb with RBS::Inline
 
+# @rbs generic unchecked out Elem
+module Enumerable[unchecked out Elem]
+  def first!: () -> Elem
+end
+
 module Isuports
   class App < Sinatra::Base
     TENANT_DB_SCHEMA_FILE_PATH: ::String
@@ -110,57 +115,57 @@ module Isuports
     def initialize: (?untyped app, **untyped _kwargs) -> untyped
 
     # 管理用DBに接続する
-    def connect_admin_db: () -> untyped
+    def connect_admin_db: () -> Mysql2::Client[Mysql2::ResultAsHash]
 
-    def admin_db: () -> untyped
+    def admin_db: () -> Mysql2::Client[Mysql2::ResultAsHash]
 
     # テナントDBのパスを返す
-    # :: (Integer) -> String
-    def tenant_db_path: (untyped id) -> untyped
+    # : (Integer) -> String
+    def tenant_db_path: (Integer) -> String
 
     # テナントDBに接続する
-    # :: (Integer) { (SQLite3::Database) -> untyped } -> void
-    def connect_to_tenant_db: (untyped id) ?{ (?) -> untyped } -> untyped
+    # : (Integer) { (SQLite3::Database[SQLite3::result_as_hash]) -> untyped } -> void
+    def connect_to_tenant_db: (Integer) { (SQLite3::Database[SQLite3::result_as_hash]) -> untyped } -> void
 
     # テナントDBを新規に作成する
-    # :: (Integer) -> nil
-    def create_tenant_db: (untyped id) -> untyped
+    # : (Integer) -> nil
+    def create_tenant_db: (Integer) -> nil
 
     # システム全体で一意なIDを生成する
-    def dispense_id: () -> untyped
+    def dispense_id: () -> String
 
     # リクエストヘッダをパースしてViewerを返す
-    def parse_viewer: () -> untyped
+    def parse_viewer: () -> Viewer
 
-    def retrieve_tenant_row_from_header: () -> untyped
+    def retrieve_tenant_row_from_header: () -> TenantRow
 
     # 参加者を取得する
-    # :: (SQLite3::Database, Integer) -> PlayerRow?
-    def retrieve_player: (untyped tenant_db, untyped id) -> untyped
+    # : (SQLite3::Database[SQLite3::result_as_hash], String) -> PlayerRow?
+    def retrieve_player: (SQLite3::Database[SQLite3::result_as_hash], String) -> PlayerRow?
 
     # 参加者を認可する
     # 参加者向けAPIで呼ばれる
-    # :: (SQLite3::Database, Integer) -> void
-    def authorize_player!: (untyped tenant_db, untyped id) -> untyped
+    # : (SQLite3::Database[SQLite3::result_as_hash], String) -> void
+    def authorize_player!: (SQLite3::Database[SQLite3::result_as_hash], String) -> void
 
     # 大会を取得する
-    # :: (SQLite3::Database, Integer) -> CompetitionRow?
-    def retrieve_competition: (untyped tenant_db, untyped id) -> untyped
+    # : (SQLite3::Database[SQLite3::result_as_hash], String) -> CompetitionRow?
+    def retrieve_competition: (SQLite3::Database[SQLite3::result_as_hash], String) -> CompetitionRow?
 
     # 排他ロックのためのファイル名を生成する
-    # :: (Integer) -> String
-    def lock_file_path: (untyped id) -> untyped
+    # : (Integer) -> String
+    def lock_file_path: (Integer) -> String
 
     # 排他ロックする
-    # :: (Integer tenant_id) { () -> untyped } -> void
-    def flock_by_tenant_id: (untyped tenant_id) ?{ (?) -> untyped } -> untyped
+    # : [T] (Integer tenant_id) { () -> T } -> T
+    def flock_by_tenant_id: [T] (Integer tenant_id) { () -> T } -> T
 
     # テナント名が規則に沿っているかチェックする
-    # :: (String) -> void
-    def validate_tenant_name!: (untyped name) -> untyped
+    # : (String) -> void
+    def validate_tenant_name!: (String) -> void
 
     class BillingReport < Struct[untyped]
-      attr_accessor competition_id(): Integer
+      attr_accessor competition_id(): String
 
       attr_accessor competition_title(): String
 
@@ -174,22 +179,27 @@ module Isuports
 
       attr_accessor billing_yen(): Integer
 
-      def self.new: (?competition_id: Integer, ?competition_title: String, ?player_count: Integer, ?visitor_count: Integer, ?billing_player_yen: Integer, ?billing_visitor_yen: Integer, ?billing_yen: Integer) -> instance
+      def self.new: (?competition_id: String, ?competition_title: String, ?player_count: Integer, ?visitor_count: Integer, ?billing_player_yen: Integer, ?billing_visitor_yen: Integer, ?billing_yen: Integer) -> instance
     end
 
     # 大会ごとの課金レポートを計算する
-    # :: (SQLite3::Database, Integer, Integer) -> BillingReport
-    def billing_report_by_competition: (untyped tenant_db, untyped tenant_id, untyped competition_id) -> untyped
+    # : (SQLite3::Database[SQLite3::result_as_hash], Integer, String) -> BillingReport
+    def billing_report_by_competition: (SQLite3::Database[SQLite3::result_as_hash], Integer, String) -> BillingReport
 
     def competitions_handler: (untyped v, untyped tenant_db) -> untyped
 
-    class CompetitionRank
-      attr_accessor rank: Integer
-      attr_accessor score: Integer
-      attr_accessor player_id: String
-      attr_accessor player_display_name: String
-      attr_accessor row_num: Integer
-      def initialize: (?rank: Integer, ?score: Integer, ?player_id: String, ?player_display_name: String, ?row_num: Integer) -> void
+    class CompetitionRank < Struct[untyped]
+      attr_accessor rank(): Integer
+
+      attr_accessor score(): Integer
+
+      attr_accessor player_id(): String
+
+      attr_accessor player_display_name(): String
+
+      attr_accessor row_num(): Integer
+
+      def self.new: (?rank: Integer, ?score: Integer, ?player_id: String, ?player_display_name: String, ?row_num: Integer) -> instance
     end
   end
 end

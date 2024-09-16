@@ -1,20 +1,3 @@
-module SQLite3
-  class Database
-    type row_value_type = String | Integer | Float | nil
-    def execute: (String, Array[untyped]) ?{ (?) -> untyped } -> Array[Array[row_value_type]]
-    def changes: () -> untyped
-    def get_first_row: (String, Array[untyped]) -> Array[row_value_type]?
-               
-    def initialize: (String, results_as_hash: bool) { (?) -> untyped } -> untyped
-  end
-end
-
-module Mysql2
-  class Error < StandardError
-    def error_number: () -> Integer
-  end
-end
-
 class Time
   def iso8601: () -> String
 end
