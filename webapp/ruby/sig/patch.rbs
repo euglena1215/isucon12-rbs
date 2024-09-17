@@ -1,17 +1,5 @@
-class Time
-  def iso8601: () -> String
-end
-
 class Open3
-  def self.capture2e: (*String) -> [String, Process::Status]
-end
-
-module OpenSSL
-  class PKey
-    class RSA
-      def initialize: (String) -> void
-    end
-  end
+  def self.capture2e: (*String, ?stdin_data: String, ?binmode: boolish) -> [String, Process::Status]
 end
 
 class CSV

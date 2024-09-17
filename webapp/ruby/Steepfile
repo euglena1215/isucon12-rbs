@@ -6,7 +6,7 @@ target :app do
   check "app.rb"
   check "sqltrace.rb"
 
-  library "json", "csv"
+  library "json", "csv", "time", "openssl", "csv"
 
   configure_code_diagnostics(D::Ruby.all_error)
 end
